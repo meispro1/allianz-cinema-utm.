@@ -4,8 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // State Object
     const state = {
         activeLocation: "national",
-        baseUrl: "https://allianzcinema.ch/",
-        path: "programm",
+        targetUrl: "https://allianzcinema.ch/programm",
         source: null,
         medium: null,
         campaign: null,
@@ -14,8 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // DOM Elements References
     const locationCards = document.querySelectorAll(".location-card");
-    const urlPrefix = document.getElementById("url-prefix");
-    const inputUrlPath = document.getElementById("url-path");
+    const inputUrlPath = document.getElementById("url-path"); // Points to the fully open URL input
     
     const dropzoneSource = document.getElementById("dropzone-source");
     const dropzoneMedium = document.getElementById("dropzone-medium");
@@ -50,9 +48,9 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // Path Input
+        // Fully Open URL Input Event
         inputUrlPath.addEventListener("input", function(e) {
-            handlePathInput(e.target.value.trim());
+            handleUrlInput(e.target.value.trim());
         });
 
         // HTML5 Drag & Drop Listeners for Pills
@@ -88,9 +86,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* --- LOCATION & PATH LOGIC (PREMIUM UX) --- */
 
-    function selectLocation(locationKey, urlValue) {
+    function selectLocation(locationKey, baseUrl) {
         state.activeLocation = locationKey;
-        state.baseUrl = urlValue;
+        
+        // Try to preserve path from the current input (e.g. "de/journal/eckdaten...")
+        let currentUrl = inputUrlPath.value.trim();
+        let path = "";
+        
+        // Domains we want to detect to strip them out
+        const domains = [
+            "https://zuerich.allianzcinema.ch/",
+            "https://basel.allianzcinema.ch/",
+            "https://allianzcinema.ch/"
+        ];
+        
+        let pathFound = false;
+        for (const dom of domains) {
+            if (currentUrl.toLowerCase().startsWith(dom)) {
+                path = currentUrl.substring(dom.length);
+                pathFound = true;
+                break;
+            }
+        }
+        
+        // If domain was not matched, try to extract path using URL object
+        if (!pathFound && /^https?:\/\//i.test(currentUrl)) {
+            try {
+                const urlObj = new URL(currentUrl);
+                path = urlObj.pathname.substring(1) + urlObj.search + urlObj.hash;
+            } catch(e) {
+                path = "";
+            }
+        } else if (!pathFound) {
+            path = currentUrl;
+        }
+        
+        // Strip leading slash if any
+        if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        
+        // Build new URL preserving path
+        const newUrl = baseUrl + path;
+        state.targetUrl = newUrl;
+        inputUrlPath.value = newUrl;
 
         // Visual update on cards
         locationCards.forEach(card => {
@@ -100,52 +139,33 @@ document.addEventListener("DOMContentLoaded", () => {
                 card.classList.remove("active");
             }
         });
-
-        // Update Prefix Label
-        urlPrefix.textContent = urlValue;
         
         generateUTM();
     }
 
-    // Smart Path Input: Detects if full URL was pasted and splits it automatically
-    function handlePathInput(rawValue) {
-        if (/^https?:\/\//i.test(rawValue)) {
-            // User pasted a full URL! Let's parse it and auto-switch location card.
-            let matched = false;
+    // Smart URL Input: Analyze typing/pasting and auto-highlight correct location card
+    function handleUrlInput(value) {
+        state.targetUrl = value;
+        
+        let matched = false;
+        
+        locationCards.forEach(card => {
+            const cardUrl = card.dataset.url; // e.g. "https://zuerich.allianzcinema.ch/"
+            const cleanCardUrl = cardUrl.replace(/\/$/, ""); // Strip trailing slash for matching
             
-            locationCards.forEach(card => {
-                const cardUrl = card.dataset.url; // e.g. "https://zuerich.allianzcinema.ch/"
-                const cleanCardUrl = cardUrl.replace(/\/$/, ""); // Strip trailing slash for matching
-                
-                if (rawValue.toLowerCase().startsWith(cleanCardUrl.toLowerCase())) {
-                    // Match found! Get path left over
-                    let pathLeft = rawValue.substring(cleanCardUrl.length);
-                    if (pathLeft.startsWith("/")) {
-                        pathLeft = pathLeft.substring(1);
-                    }
-                    
-                    // Update State & UI
-                    selectLocation(card.dataset.location, cardUrl);
-                    inputUrlPath.value = pathLeft;
-                    state.path = pathLeft;
-                    matched = true;
-                    showToast(`Standort automatisch auf '${card.querySelector(".loc-name").textContent}' gewechselt!`);
-                }
-            });
+            if (value.toLowerCase().startsWith(cleanCardUrl.toLowerCase())) {
+                state.activeLocation = card.dataset.location;
+                card.classList.add("active");
+                matched = true;
+            } else {
+                card.classList.remove("active");
+            }
+        });
 
-            // If no registered domains match, treat national as base and keep whole url as path
-            if (!matched) {
-                state.path = rawValue;
-            }
-        } else {
-            // Standard typing path
-            // Strip leading slashes
-            let cleanPath = rawValue;
-            if (cleanPath.startsWith("/")) {
-                cleanPath = cleanPath.substring(1);
-                inputUrlPath.value = cleanPath;
-            }
-            state.path = cleanPath;
+        // Custom domain mode (deactivate all cards if none match)
+        if (!matched) {
+            state.activeLocation = null;
+            locationCards.forEach(card => card.classList.remove("active"));
         }
 
         generateUTM();
@@ -266,8 +286,8 @@ document.addEventListener("DOMContentLoaded", () => {
         state.source = null;
         state.medium = null;
         state.campaign = null;
-        state.path = "programm";
-        inputUrlPath.value = "programm";
+        state.targetUrl = "https://allianzcinema.ch/programm";
+        inputUrlPath.value = "https://allianzcinema.ch/programm";
         
         // Reset location card to National
         selectLocation("national", "https://allianzcinema.ch/");
@@ -281,17 +301,24 @@ document.addEventListener("DOMContentLoaded", () => {
     /* --- UTM GENERATION ENGINE --- */
 
     function generateUTM() {
-        // Construct clean base path URL
-        let cleanUrl = state.baseUrl; // e.g. "https://allianzcinema.ch/"
+        let base = state.targetUrl.trim();
         
-        if (state.path) {
-            cleanUrl += state.path;
+        if (!base) {
+            urlOutput.textContent = "";
+            renderParametersPreview();
+            return;
         }
 
-        let utmUrl = cleanUrl;
+        // Auto-inject https if missing, unless relative
+        let cleanBase = base;
+        if (!/^https?:\/\//i.test(cleanBase) && !cleanBase.startsWith("#") && !cleanBase.startsWith("/")) {
+            cleanBase = "https://" + cleanBase;
+        }
+
+        let utmUrl = cleanBase;
         
         try {
-            const urlObj = new URL(cleanUrl);
+            const urlObj = new URL(cleanBase);
             
             if (state.source) urlObj.searchParams.set("utm_source", state.source);
             if (state.medium) urlObj.searchParams.set("utm_medium", state.medium);
@@ -299,14 +326,15 @@ document.addEventListener("DOMContentLoaded", () => {
             
             utmUrl = urlObj.toString();
         } catch (e) {
+            // Fallback manual query string joining
             const params = [];
             if (state.source) params.push(`utm_source=${encodeURIComponent(state.source)}`);
             if (state.medium) params.push(`utm_medium=${encodeURIComponent(state.medium)}`);
             if (state.campaign) params.push(`utm_campaign=${encodeURIComponent(state.campaign)}`);
             
             if (params.length > 0) {
-                const separator = cleanUrl.includes("?") ? "&" : "?";
-                utmUrl = cleanUrl + separator + params.join("&");
+                const separator = cleanBase.includes("?") ? "&" : "?";
+                utmUrl = cleanBase + separator + params.join("&");
             }
         }
 
@@ -339,9 +367,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function copyToClipboard() {
         const url = urlOutput.textContent.trim();
-        const baseDomain = state.baseUrl + (state.path || "");
         
-        if (url === baseDomain && !state.source && !state.medium && !state.campaign) {
+        if (url === state.targetUrl && !state.source && !state.medium && !state.campaign) {
             showToast("Bitte konfiguriere zuerst mindestens einen UTM Parameter!");
             return;
         }
@@ -378,7 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
             source: state.source,
             medium: state.medium,
             campaign: state.campaign,
-            location: state.activeLocation
+            location: state.activeLocation || "custom"
         };
 
         state.history.unshift(historyItem);
@@ -405,9 +432,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const historyItem = document.createElement("div");
             historyItem.className = "history-item";
             
-            // Location Icon representing location
-            const locIcon = item.location === "zuerich" ? "⛵ Zürich" : item.location === "basel" ? "⛪ Basel" : "🇨🇭 National";
-            
+            // Location label
+            let locIcon = "🇨🇭 National";
+            if (item.location === "zuerich") locIcon = "⛵ Zürich";
+            else if (item.location === "basel") locIcon = "⛪ Basel";
+            else if (item.location === "custom") locIcon = "🔗 Custom";
+
             historyItem.innerHTML = `
                 <div class="history-info">
                     <div class="history-url" title="${item.url}">${item.url}</div>

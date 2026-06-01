@@ -366,47 +366,23 @@ body {
     overflow: hidden;
 }
 
-/* Prefixed input container */
-.url-input-container {
-    display: flex;
-    align-items: stretch;
-    background: rgba(0, 0, 0, 0.3);
+/* Full width open URL input */
+.url-input-full {
+    background: rgba(0, 0, 0, 0.35);
     border: 1px solid var(--card-border);
+    color: var(--text-primary);
+    padding: 0.85rem 1.25rem;
     border-radius: var(--radius-sm);
-    overflow: hidden;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    font-size: 0.95rem;
+    transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+    width: 100%;
     margin-top: 0.3rem;
 }
 
-.url-input-container:focus-within {
+.url-input-full:focus {
+    outline: none;
     border-color: var(--primary-blue);
     box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2);
-}
-
-.url-prefix {
-    background: rgba(255, 255, 255, 0.03);
-    border-right: 1px solid var(--card-border);
-    color: var(--text-secondary);
-    padding: 0.8rem 1rem;
-    font-size: 0.9rem;
-    font-family: var(--font-sans);
-    display: flex;
-    align-items: center;
-    user-select: none;
-}
-
-.url-input-container input {
-    background: transparent;
-    border: none;
-    color: var(--text-primary);
-    padding: 0.8rem 1rem;
-    font-size: 0.95rem;
-    flex-grow: 1;
-    width: 100%;
-}
-
-.url-input-container input:focus {
-    outline: none;
 }
 
 /* Sections label in Workspace */
