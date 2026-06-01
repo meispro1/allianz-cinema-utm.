@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // State Object
     const state = {
-        activeLocation: "national",
         targetUrl: "https://allianzcinema.ch/programm",
         source: null,
         medium: null,
@@ -12,8 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // DOM Elements References
-    const locationCards = document.querySelectorAll(".location-card");
-    const inputUrlPath = document.getElementById("url-path"); // Points to the fully open URL input
+    const inputUrlPath = document.getElementById("url-path"); // The fully open URL input
     
     const dropzoneSource = document.getElementById("dropzone-source");
     const dropzoneMedium = document.getElementById("dropzone-medium");
@@ -41,13 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Event Listeners Setup
     function setupEventListeners() {
-        // Location Card Selector Clicks
-        locationCards.forEach(card => {
-            card.addEventListener("click", function() {
-                selectLocation(this.dataset.location, this.dataset.url);
-            });
-        });
-
         // Fully Open URL Input Event
         inputUrlPath.addEventListener("input", function(e) {
             handleUrlInput(e.target.value.trim());
@@ -84,90 +75,10 @@ document.addEventListener("DOMContentLoaded", () => {
         btnClearHistory.addEventListener("click", clearHistory);
     }
 
-    /* --- LOCATION & PATH LOGIC (PREMIUM UX) --- */
+    /* --- INPUT HANDLING LOGIC --- */
 
-    function selectLocation(locationKey, baseUrl) {
-        state.activeLocation = locationKey;
-        
-        // Try to preserve path from the current input (e.g. "de/journal/eckdaten...")
-        let currentUrl = inputUrlPath.value.trim();
-        let path = "";
-        
-        // Domains we want to detect to strip them out
-        const domains = [
-            "https://zuerich.allianzcinema.ch/",
-            "https://basel.allianzcinema.ch/",
-            "https://allianzcinema.ch/"
-        ];
-        
-        let pathFound = false;
-        for (const dom of domains) {
-            if (currentUrl.toLowerCase().startsWith(dom)) {
-                path = currentUrl.substring(dom.length);
-                pathFound = true;
-                break;
-            }
-        }
-        
-        // If domain was not matched, try to extract path using URL object
-        if (!pathFound && /^https?:\/\//i.test(currentUrl)) {
-            try {
-                const urlObj = new URL(currentUrl);
-                path = urlObj.pathname.substring(1) + urlObj.search + urlObj.hash;
-            } catch(e) {
-                path = "";
-            }
-        } else if (!pathFound) {
-            path = currentUrl;
-        }
-        
-        // Strip leading slash if any
-        if (path.startsWith("/")) {
-            path = path.substring(1);
-        }
-        
-        // Build new URL preserving path
-        const newUrl = baseUrl + path;
-        state.targetUrl = newUrl;
-        inputUrlPath.value = newUrl;
-
-        // Visual update on cards
-        locationCards.forEach(card => {
-            if (card.dataset.location === locationKey) {
-                card.classList.add("active");
-            } else {
-                card.classList.remove("active");
-            }
-        });
-        
-        generateUTM();
-    }
-
-    // Smart URL Input: Analyze typing/pasting and auto-highlight correct location card
     function handleUrlInput(value) {
         state.targetUrl = value;
-        
-        let matched = false;
-        
-        locationCards.forEach(card => {
-            const cardUrl = card.dataset.url; // e.g. "https://zuerich.allianzcinema.ch/"
-            const cleanCardUrl = cardUrl.replace(/\/$/, ""); // Strip trailing slash for matching
-            
-            if (value.toLowerCase().startsWith(cleanCardUrl.toLowerCase())) {
-                state.activeLocation = card.dataset.location;
-                card.classList.add("active");
-                matched = true;
-            } else {
-                card.classList.remove("active");
-            }
-        });
-
-        // Custom domain mode (deactivate all cards if none match)
-        if (!matched) {
-            state.activeLocation = null;
-            locationCards.forEach(card => card.classList.remove("active"));
-        }
-
         generateUTM();
     }
 
@@ -289,9 +200,6 @@ document.addEventListener("DOMContentLoaded", () => {
         state.targetUrl = "https://allianzcinema.ch/programm";
         inputUrlPath.value = "https://allianzcinema.ch/programm";
         
-        // Reset location card to National
-        selectLocation("national", "https://allianzcinema.ch/");
-        
         renderWorkspace();
         generateUTM();
         updateActivePillStates();
@@ -398,6 +306,17 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        // Intelligently detect location from the URL domain for descriptive logging in history
+        let locationLabel = "custom";
+        const lowerUrl = url.toLowerCase();
+        if (lowerUrl.includes("zuerich.allianzcinema.ch")) {
+            locationLabel = "zuerich";
+        } else if (lowerUrl.includes("basel.allianzcinema.ch")) {
+            locationLabel = "basel";
+        } else if (lowerUrl.includes("allianzcinema.ch")) {
+            locationLabel = "national";
+        }
+
         const historyItem = {
             id: Date.now(),
             url: url,
@@ -405,7 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
             source: state.source,
             medium: state.medium,
             campaign: state.campaign,
-            location: state.activeLocation || "custom"
+            location: locationLabel
         };
 
         state.history.unshift(historyItem);
@@ -489,6 +408,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* --- HELPERS & TOAST FEEDBACK --- */
 
+    // Render uppercase labels cleanly
     function capitalize(str) {
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
