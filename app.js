@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // State Object
     const state = {
-        targetUrl: "https://allianzcinema.ch/programm",
+        targetUrl: "https://zuerich.allianzcinema.ch/de/journal/eckdaten-der-kinosaison-2026",
         source: null,
         medium: null,
         campaign: null,
@@ -197,8 +197,8 @@ document.addEventListener("DOMContentLoaded", () => {
         state.source = null;
         state.medium = null;
         state.campaign = null;
-        state.targetUrl = "https://allianzcinema.ch/programm";
-        inputUrlPath.value = "https://allianzcinema.ch/programm";
+        state.targetUrl = "https://zuerich.allianzcinema.ch/de/journal/eckdaten-der-kinosaison-2026";
+        inputUrlPath.value = "https://zuerich.allianzcinema.ch/de/journal/eckdaten-der-kinosaison-2026";
         
         renderWorkspace();
         generateUTM();
