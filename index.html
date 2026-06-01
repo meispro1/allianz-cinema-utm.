@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allianz Cinema 2026 — UTM Campaign Builder</title>
+    <!-- Google Fonts: Inter & Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-decorations">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <span class="logo-icon">🎬</span>
+                <div>
+                    <h1>Allianz Cinema 2026</h1>
+                    <p class="subtitle">UTM Campaign & Tracking Builder — Zürich & Basel</p>
+                </div>
+            </div>
+            <div class="location-badge">
+                <span class="badge-dot"></span> Active Campaign Mode
+            </div>
+        </header>
+
+        <!-- Main Grid Layout -->
+        <main class="app-grid">
+            
+            <!-- Left Side: Draggable Elements Bank -->
+            <section class="elements-bank card">
+                <div class="card-header">
+                    <h2>Tracking-Tags</h2>
+                    <p class="instructions">Zieh die Tags in die Slots rechts oder klicke sie an, um sie direkt zu platzieren.</p>
+                </div>
+
+                <!-- Source Bank -->
+                <div class="category-group">
+                    <h3>1. Campaign Source <span>(utm_source)</span></h3>
+                    <div class="pills-container" id="source-bank">
+                        <div class="pill source-pill" draggable="true" id="source-20min" data-value="20min" data-type="source">20min</div>
+                        <div class="pill source-pill" draggable="true" id="source-nau" data-value="nau" data-type="source">nau</div>
+                        <div class="pill source-pill" draggable="true" id="source-meta" data-value="meta" data-type="source">meta</div>
+                        <div class="pill source-pill" draggable="true" id="source-google" data-value="google" data-type="source">google</div>
+                    </div>
+                </div>
+
+                <!-- Medium Bank -->
+                <div class="category-group">
+                    <h3>2. Campaign Medium <span>(utm_medium)</span></h3>
+                    <div class="pills-container" id="medium-bank">
+                        <div class="pill medium-pill" draggable="true" id="medium-banner" data-value="banner" data-type="medium">banner</div>
+                        <div class="pill medium-pill" draggable="true" id="medium-nl" data-value="nl" data-type="medium">nl</div>
+                        <div class="pill medium-pill" draggable="true" id="medium-carousel" data-value="carousel" data-type="medium">carousel</div>
+                        <div class="pill medium-pill" draggable="true" id="medium-pmax" data-value="pmax" data-type="medium">pmax</div>
+                    </div>
+                </div>
+
+                <!-- Campaign Bank -->
+                <div class="category-group">
+                    <h3>3. Campaign Name <span>(utm_campaign)</span></h3>
+                    <div class="pills-container" id="campaign-bank">
+                        <div class="pill campaign-pill" draggable="true" id="campaign-preview" data-value="preview" data-type="campaign">preview</div>
+                        <div class="pill campaign-pill" draggable="true" id="campaign-vvk" data-value="vvk" data-type="campaign">vvk</div>
+                        <div class="pill campaign-pill" draggable="true" id="campaign-premiere" data-value="premiere" data-type="campaign">premiere</div>
+                        <div class="pill campaign-pill" draggable="true" id="campaign-lc" data-value="lc" data-type="campaign">lc</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Side: Dropzones & Generator Output -->
+            <section class="builder-workspace">
+                
+                <!-- Target URL & Dropzones Card -->
+                <div class="card workspace-card">
+                    <h2>Kampagnen-Workspace</h2>
+                    
+                    <!-- Location Selector -->
+                    <div class="input-group">
+                        <label>1. Standort auswählen</label>
+                        <div class="location-selector">
+                            <div class="location-card active" data-location="national" data-url="https://allianzcinema.ch/">
+                                <span class="loc-icon">🇨🇭</span>
+                                <div class="loc-info">
+                                    <span class="loc-name">National</span>
+                                    <span class="loc-domain">allianzcinema.ch</span>
+                                </div>
+                            </div>
+                            <div class="location-card" data-location="zuerich" data-url="https://zuerich.allianzcinema.ch/">
+                                <span class="loc-icon">⛵</span>
+                                <div class="loc-info">
+                                    <span class="loc-name">Zürich</span>
+                                    <span class="loc-domain">zuerich.allianzcinema.ch</span>
+                                </div>
+                            </div>
+                            <div class="location-card" data-location="basel" data-url="https://basel.allianzcinema.ch/">
+                                <span class="loc-icon">⛪</span>
+                                <div class="loc-info">
+                                    <span class="loc-name">Basel</span>
+                                    <span class="loc-domain">basel.allianzcinema.ch</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Destination Path Input -->
+                    <div class="input-group">
+                        <label for="url-path">2. Zielseite / Pfad eingeben</label>
+                        <div class="url-input-container">
+                            <span class="url-prefix" id="url-prefix">https://allianzcinema.ch/</span>
+                            <input type="text" id="url-path" placeholder="programm" value="programm">
+                        </div>
+                        <span class="input-helper">Du kannst hier z. B. <code>programm</code> oder <code>zuerich/tickets/dune-2</code> eingeben.</span>
+                    </div>
+
+                    <!-- Dropzones Grid -->
+                    <label class="section-label">3. Parameter platzieren</label>
+                    <div class="dropzones-grid">
+                        
+                        <!-- Dropzone Source -->
+                        <div class="dropzone-wrapper">
+                            <label>utm_source</label>
+                            <div class="dropzone" id="dropzone-source" data-type="source">
+                                <span class="dropzone-placeholder">Drop Source here</span>
+                            </div>
+                        </div>
+
+                        <!-- Dropzone Medium -->
+                        <div class="dropzone-wrapper">
+                            <label>utm_medium</label>
+                            <div class="dropzone" id="dropzone-medium" data-type="medium">
+                                <span class="dropzone-placeholder">Drop Medium here</span>
+                            </div>
+                        </div>
+
+                        <!-- Dropzone Campaign -->
+                        <div class="dropzone-wrapper">
+                            <label>utm_campaign</label>
+                            <div class="dropzone" id="dropzone-campaign" data-type="campaign">
+                                <span class="dropzone-placeholder">Drop Campaign here</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="workspace-actions">
+                        <button id="btn-clear" class="btn btn-secondary">Workspace zurücksetzen</button>
+                    </div>
+                </div>
+
+                <!-- Result Box (Glowing Glassmorphism Card) -->
+                <div class="card result-card">
+                    <h2>Generierter Kampagnen-Link</h2>
+                    
+                    <div class="result-display">
+                        <div class="url-output" id="url-output">
+                            https://allianzcinema.ch/programm
+                        </div>
+                        <button id="btn-copy" class="btn btn-primary">
+                            <span class="btn-icon">📋</span> Link kopieren
+                        </button>
+                    </div>
+
+                    <div class="parameters-preview" id="parameters-preview">
+                        <!-- Tags preview dynamically populated -->
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+
+        <!-- Bottom: History & Logs Section -->
+        <footer class="history-section card">
+            <div class="history-header">
+                <h2>Verlauf & kopierte Links</h2>
+                <button id="btn-clear-history" class="btn btn-text">Verlauf leeren</button>
+            </div>
+            <div class="history-list" id="history-list">
+                <p class="no-history">Noch keine UTM Links generiert. Nutze den Workspace oben, um deinen ersten Link zu erstellen.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
